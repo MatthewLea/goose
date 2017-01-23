@@ -12,9 +12,9 @@ context where each has a dev database and creates independently dated migrations
 As an example:
 
 Chronologically:
-**Migration \#1** Jan 12, 2016 - Bob creates a products table  : 20160112xxxxxx_CreateProductTable.sql
-**Migration \#2** Jan 13, 2016 - Mike creates a chat table  : 20160113xxxxxx_CreateChatTable.sql
-**Migration \#3** Jan 14, 2016 - Bob creates a orders table which refers to products :  20160114xxxxxx_CreateOrdersTable.sql
+* **Migration \#1** Jan 12, 2016 - Bob creates a products table  : 20160112xxxxxx_CreateProductTable.sql
+* **Migration \#2** Jan 13, 2016 - Mike creates a chat table  : 20160113xxxxxx_CreateChatTable.sql
+* **Migration \#3** Jan 14, 2016 - Bob creates a orders table which refers to products :  20160114xxxxxx_CreateOrdersTable.sql
 
 If Bob and Mike each subsequently combine their migrations and attempt a GOOSE UP, neither will have the complete database.  In fact, Mike will fail on 
 **Migration \#3** because GOOSE UP skipped **Migration \#1**  
