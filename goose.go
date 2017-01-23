@@ -3,6 +3,7 @@ package goose
 import (
 	"database/sql"
 	"fmt"
+	"strconv"
 	"sync"
 )
 
@@ -20,6 +21,28 @@ func Run(command string, db *sql.DB, dir string, args ...string) error {
 		}
 	case "up-by-one":
 		if err := UpByOne(db, dir); err != nil {
+			return err
+		}
+	case "up-from":
+		if len(args) == 0 {
+			return fmt.Errorf("up-from must be of form: goose [OPTIONS] DRIVER DBSTRING up-from VERSION")
+		}
+
+		v := args[0]
+		if len(args[0]) > 14 {
+			return fmt.Errorf("VERSION should be less/equal to 14 in length and be in the form YYYYMMDDHHMMSS")
+		}
+
+		//Ensure proper length and parse
+		v += "00000000000000"
+		v = v[0:14]
+
+		version, err := strconv.ParseInt(v, 10, 64)
+		if err != nil {
+			return fmt.Errorf("failed to parse up-from version.  Ensure format is YYYYMMDDHHMMSS")
+		}
+
+		if err := UpFrom(db, dir, version); err != nil {
 			return err
 		}
 	case "create":

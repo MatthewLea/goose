@@ -2,22 +2,29 @@
 
 Goose is a database migration tool. Manage your database's evolution by creating incremental SQL files or Go functions.
 
-[![GoDoc Widget]][GoDoc] [![Travis Widget]][Travis]
 
 ### Goals of this fork
 
-This is a fork of https://bitbucket.org/liamstask/goose with the following changes:
-- No config files
-- Default goose binary can migrate SQL files only
-- We dropped building .go files on-the-fly in favor of the below
-- Import `github.com/pressly/goose` package
-    - To run complex Go migrations with your own `*sql.DB` connection via `*sql.Tx` transactions
-    - The pkg doesn't register any SQL drivers anymore (no `panic()` driver conflicts with your codebase!)
-    - The pkg doesn't have any vendor dependencies anymore
+This is a fork of https://github.com/pressly/goose with the following change:
+Added **up-from** command to execute migrations from a certain point in time.  This is especially useful in a multi-developer 
+context where each has a dev database and creates independently dated migrations that are merged to a common repo.
+
+As an example:
+
+Chronologically:
+**Migration \#1** Jan 12, 2016 - Bob creates a products table  : 20160112xxxxxx_CreateProductTable.sql
+**Migration \#2** Jan 13, 2016 - Mike creates a chat table  : 20160113xxxxxx_CreateChatTable.sql
+**Migration \#3** Jan 14, 2016 - Bob creates a orders table which refers to products :  20160114xxxxxx_CreateOrdersTable.sql
+
+If Bob and Mike each subsequently combine their migrations and attempt a GOOSE UP, neither will have the complete database.  In fact, Mike will fail on 
+**Migration \#3** because GOOSE UP skipped **Migration \#1**  
+
+The new up-from command allows these migrations to occur.  Mike can simply issue **goose up-from 20160112** (abbrev.) and Goose will simply apply *what hasn't already been applied.*
+
 
 # Install
 
-    $ go get -u github.com/pressly/goose/cmd/goose
+    $ go get -u github.com/MatthewLea/goose/cmd/goose
 
 This will install the `goose` binary to your `$GOPATH/bin` directory.
 
@@ -37,6 +44,7 @@ Options:
 
 Commands:
     up         Migrate the DB to the most recent version available
+    up-from    Execute migrations starting from the specified version
     down       Roll back the version by 1
     redo       Re-run the latest migration
     status     Dump the migration status for the current DB
@@ -66,6 +74,10 @@ Apply all available migrations.
     $ OK    001_basics.sql
     $ OK    002_next.sql
     $ OK    003_and_again.go
+
+## up-from
+
+Apply any *unapplied* migrations starting from the specified version (or date/time)
 
 ## down
 

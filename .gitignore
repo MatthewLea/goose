@@ -2,3 +2,6 @@
 cmd/goose/goose*
 *.swp
 *.test
+
+cmd/goose/debug
+.vscode/*

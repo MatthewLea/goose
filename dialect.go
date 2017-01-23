@@ -11,6 +11,7 @@ type SqlDialect interface {
 	createVersionTableSql() string // sql string to create the goose_db_version table
 	insertVersionSql() string      // sql string to insert the initial version table row
 	dbVersionQuery(db *sql.DB) (*sql.Rows, error)
+	versionStatusQuery(db *sql.DB, version int64) (bool, error) //Determines the current IsApplied value of the supplied version
 }
 
 var dialect SqlDialect = &PostgresDialect{}
@@ -63,6 +64,19 @@ func (pg PostgresDialect) dbVersionQuery(db *sql.DB) (*sql.Rows, error) {
 	return rows, err
 }
 
+func (pg PostgresDialect) versionStatusQuery(db *sql.DB, version int64) (bool, error) {
+	var isApplied bool
+	err := db.QueryRow("SELECT is_applied FROM goose_db_version WHERE version_id = $1", version).Scan(&isApplied)
+	switch {
+	case err == sql.ErrNoRows:
+		return false, nil
+	case err != nil:
+		return false, err
+	default:
+		return isApplied, nil
+	}
+}
+
 ////////////////////////////
 // MySQL
 ////////////////////////////
@@ -92,6 +106,19 @@ func (m MySqlDialect) dbVersionQuery(db *sql.DB) (*sql.Rows, error) {
 	return rows, err
 }
 
+func (m MySqlDialect) versionStatusQuery(db *sql.DB, version int64) (bool, error) {
+	var isApplied bool
+	err := db.QueryRow("SELECT is_applied FROM goose_db_version WHERE version_id = ?", version).Scan(&isApplied)
+	switch {
+	case err == sql.ErrNoRows:
+		return false, nil
+	case err != nil:
+		return false, err
+	default:
+		return isApplied, nil
+	}
+}
+
 ////////////////////////////
 // sqlite3
 ////////////////////////////
@@ -118,4 +145,17 @@ func (m Sqlite3Dialect) dbVersionQuery(db *sql.DB) (*sql.Rows, error) {
 	}
 
 	return rows, err
+}
+
+func (m Sqlite3Dialect) versionStatusQuery(db *sql.DB, version int64) (bool, error) {
+	var isApplied bool
+	err := db.QueryRow("SELECT is_applied FROM goose_db_version WHERE version_id = ?", version).Scan(&isApplied)
+	switch {
+	case err == sql.ErrNoRows:
+		return false, nil
+	case err != nil:
+		return false, err
+	default:
+		return isApplied, nil
+	}
 }

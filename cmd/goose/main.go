@@ -7,12 +7,10 @@ import (
 	"log"
 	"os"
 
-	"github.com/pressly/goose"
-
+	"github.com/MatthewLea/goose"
 	_ "github.com/go-sql-driver/mysql"
 	_ "github.com/lib/pq"
 	_ "github.com/mattn/go-sqlite3"
-	_ "github.com/ziutek/mymysql/godrv"
 )
 
 var (
@@ -86,6 +84,7 @@ var (
 
 Examples:
     goose postgres "user=postgres dbname=postgres sslmode=disable" up
+	goose mysql "user:password@/dbname" up-from 20160101
     goose mysql "user:password@/dbname" down
     goose sqlite3 ./foo.db status
     goose postgres "user=postgres dbname=postgres sslmode=disable" create init sql
@@ -96,6 +95,7 @@ Options:
 	usageCommands = `
 Commands:
     up         Migrate the DB to the most recent version available
+    up-from	   Run any non-applied migrations having a version greater than or equal to the specified version
     down       Roll back the version by 1
     redo       Re-run the latest migration
     status     Dump the migration status for the current DB

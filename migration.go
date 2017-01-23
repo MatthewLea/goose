@@ -74,6 +74,11 @@ func (m *Migration) run(db *sql.DB, direction bool) error {
 	return nil
 }
 
+//GetVersionStatus interrogates the DB for the current IsApplied value of this Migration
+func (m *Migration) GetVersionStatus(db *sql.DB) (bool, error) {
+	return GetDialect().versionStatusQuery(db, m.Version)
+}
+
 // look for migration scripts with names in the form:
 //  XXX_descriptivename.ext
 // where XXX specifies the version number
